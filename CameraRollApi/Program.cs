@@ -1,7 +1,9 @@
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using TinifyAPI;
 
 var builder = WebApplication.CreateBuilder(args);
+var tinifyApiKey = builder.Configuration["Tinify:Key"];
 
 // Add services to the container.
 
@@ -20,6 +22,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+Tinify.Key = tinifyApiKey;
 
 app.UseHttpsRedirection();
 
