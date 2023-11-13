@@ -1,3 +1,5 @@
+using System.Reflection.Metadata;
+
 namespace Domain.Entities;
 
 public class Photo
@@ -20,4 +22,16 @@ public class PhotoDto
   public string? S3Url { get; set; }
   public DateTime UpdatedAt { get; set; } = DateTime.Now;
   public DateTime CreatedAt { get; set; } = DateTime.Now;
+}
+
+public class PhotoUpdateDto 
+{
+  public string? Title { get; set; }
+  public string? Description { get; set; }
+  public bool? IsPublic { get; set; }
+}
+
+public class PhotoCreateDto 
+{
+  public string Image { get; set; } = "";
 }
