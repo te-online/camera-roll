@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using TinifyAPI;
+using Amazon.S3;
+using Amazon.S3.Model;
 
 namespace CameraRollApi.Controllers;
 
@@ -10,11 +13,13 @@ public class PhotoController : ControllerBase
 {
     private readonly ILogger<PhotoController> _logger;
     private readonly PhotoContext _context;
+    private readonly IConfiguration _config;
 
-    public PhotoController(ILogger<PhotoController> logger, PhotoContext context)
+    public PhotoController(ILogger<PhotoController> logger, PhotoContext context, IConfiguration config)
     {
         _logger = logger;
         _context = context;
+        _config = config;
     }
 
     [HttpGet(
@@ -80,10 +85,58 @@ public class PhotoController : ControllerBase
     public async Task<ActionResult<PhotoDto>> PostPhoto(PhotoCreateDto photoDto)
     {
         byte[] imageBytes = Convert.FromBase64String(photoDto.Image);
+        Guid photoId = Guid.NewGuid();
+        
+        var source = Tinify.FromBuffer(imageBytes);
+        var adjustedSource = source
+            .Convert(new 
+            {
+                type = new []{"image/jpeg"}
+            })
+            .Resize(new 
+            {
+                method = "cover",
+                width = 1920,
+                height = 1080
+            });
+        var result = await adjustedSource.GetResult();
+
+        var config = new AmazonS3Config
+        {
+            ServiceURL = "https://s3.eu-central-003.backblazeb2.com"
+        };
+
+        AmazonS3Client s3Client = new(
+            _config["AWS:S3_ACCESS_KEY"],
+            _config["AWS:S3_SECRET_KEY"],
+            config
+        );
+
+        PutObjectRequest request = new()
+        {
+            BucketName = "photos-thomasebert-net",
+            Key = photoId + "." + result.Extension,
+            ContentType = result.ContentType,
+            ContentBody = System.Text.Encoding.Unicode.GetString(result.ToBuffer())
+        };
+
+        try 
+        {
+            await s3Client.PutObjectAsync(request);
+        } 
+        catch (AmazonS3Exception e)
+        {
+            _logger.LogError("Error encountered on server. Message:'{0}' when writing an object", e.Message);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Unknown error encountered on server. Message:'{0}' when writing an object", e.Message);
+        }
 
         var photo = new Photo 
         {
-            S3Url = "https://example.org/here-goes-the-photo"
+            Id = photoId,
+            S3Url = "https://" + request.BucketName + ".s3.eu-central-003.backblazeb2.com/" + photoId + "." + result.Extension
         };
 
         _context.Photos.Add(photo);
