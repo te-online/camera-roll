@@ -1,3 +1,6 @@
+using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,6 +9,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+// Configure InMemory Database
+builder.Services.AddDbContext<PhotoContext>(opt => opt.UseInMemoryDatabase("Photos"));
 
 var app = builder.Build();
 
