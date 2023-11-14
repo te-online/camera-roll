@@ -126,11 +126,11 @@ public class PhotoController : ControllerBase
         } 
         catch (AmazonS3Exception e)
         {
-            _logger.LogError("Error encountered on server. Message:'{0}' when writing an object", e.Message);
+            _logger.LogError("Error encountered on server. Message:'{Message}' when writing an object", e.Message);
         }
         catch (Exception e)
         {
-            _logger.LogError("Unknown error encountered on server. Message:'{0}' when writing an object", e.Message);
+            _logger.LogError("Unknown error encountered on server. Message:'{Message}' when writing an object", e.Message);
         }
 
         var photo = new Photo 
