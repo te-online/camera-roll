@@ -117,7 +117,7 @@ public class PhotoController : ControllerBase
             BucketName = "photos-thomasebert-net",
             Key = photoId + "." + result.Extension,
             ContentType = result.ContentType,
-            ContentBody = System.Text.Encoding.Unicode.GetString(result.ToBuffer())
+            InputStream = new MemoryStream(result.ToBuffer())
         };
 
         try 
