@@ -91,7 +91,7 @@ public class PhotoController : ControllerBase
         var adjustedSource = source
             .Convert(new 
             {
-                type = new []{"image/jpeg"}
+                type = new []{"image/webp"}
             })
             .Resize(new 
             {
